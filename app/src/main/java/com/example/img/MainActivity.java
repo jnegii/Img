@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.loader.content.CursorLoader;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -15,6 +16,7 @@ import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
@@ -30,10 +32,12 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
     private EditText editText;
-    public static final int PICK_IMAGE_REQUEST = 1;
+    public static final int PICK_IMAGE_REQUEST = 1010;
     private Uri uri;
     private RetrofitInterface service;
     String type = "image";
+    private ProgressDialog mProgressDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,24 +52,28 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void fileChooser() {
-        Intent intent = new Intent();
-        intent.setType("*/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-
-        startActivityForResult(intent, PICK_IMAGE_REQUEST);
-
-    }
+//    private void fileChooser() {
+////        Intent intent = new Intent();
+////        intent.setType("*/*");
+////        intent.setAction(Intent.ACTION_GET_CONTENT);
+////
+////        startActivityForResult(intent, PICK_IMAGE_REQUEST);
+//        Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+//        startActivityForResult(gallery, PICK_IMAGE_REQUEST);
+//
+//    }
 
     public void videoselect(View view) {
         type = "video";
-        fileChooser();
+        Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Video.Media.INTERNAL_CONTENT_URI);
+        startActivityForResult(gallery, PICK_IMAGE_REQUEST);
 
     }
 
     public void imageselect(View view) {
         type = "image";
-        fileChooser();
+        Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+        startActivityForResult(gallery, PICK_IMAGE_REQUEST);
 
     }
 
@@ -73,13 +81,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+        if (resultCode == RESULT_OK && requestCode == PICK_IMAGE_REQUEST){
 
             uri = data.getData();
             if (uri != null) {
                 uploadFile(uri, editText.getText().toString());
-
-
             } else
                 Toast.makeText(this, "please select file ", Toast.LENGTH_SHORT).show();
 
@@ -110,6 +116,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void uploadFile(Uri fileUri, String desc) {
+        mProgressDialog = new ProgressDialog(MainActivity.this);
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setMessage("Uploading...");
+        mProgressDialog.setCanceledOnTouchOutside(false);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
+
         //creating a file
         File file = null;
         if (type.equalsIgnoreCase("image"))
@@ -132,6 +145,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<imageModel> call, Response<imageModel> response) {
                 if (response.code() == 200) {
+                    mProgressDialog.hide();
+
                     imageModel im = response.body();
                     Log.d("TEST1", "onResponse: " + im.getMessage());
                     Toast.makeText(MainActivity.this, im.getMessage(), Toast.LENGTH_SHORT).show();
@@ -140,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<imageModel> call, Throwable t) {
-
+                mProgressDialog.hide();
             }
         });
 
