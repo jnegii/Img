@@ -15,7 +15,7 @@ public class RetrofitClass {
 
 
     private static Retrofit retrofit = null;
-    protected static final String BASE_URL = "http://videlyadmin.website/";
+    protected static final String BASE_URL = "https://videlyadmin.website/";
     private static int REQUEST_TIMEOUT = 60;
     private static OkHttpClient okHttpClient;
 

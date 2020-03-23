@@ -16,7 +16,7 @@ public interface RetrofitInterface {
 
     @Multipart
     @POST("Api.php?apicall=upload")
-    Call<imageModel> imageupload(@Part("image") MultipartBody.Part file,
+    Call<imageModel> imageupload(@Part MultipartBody.Part  file,
                                    @Part("desc") RequestBody desc);
 
 
